@@ -1,0 +1,27 @@
+name: Mirror to Personal
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mirror to personal
+        run: |
+          git remote add personal https://${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/${{ secrets.PERSONAL_REPO }}.git || true
+          git push personal --mirror --force
+
+
+
+
+
