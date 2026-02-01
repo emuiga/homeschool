@@ -1,12 +1,7 @@
-import AuthGate from "@/components/AuthGate";
+import MapPage from "@/features/map/presentation/map-page";
 
-export default function MapPage() {
-  return (
-    <AuthGate>
-      <div>
-      </div>
-    </AuthGate>
-  );
+export default function MapRoute() {
+  return <MapPage />;
 }
 
 

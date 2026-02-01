@@ -3,8 +3,6 @@ name: Mirror to Personal
 on:
   push:
     branches:
-      - main
-      - master
       - develop
   workflow_dispatch:
 

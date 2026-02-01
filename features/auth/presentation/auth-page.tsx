@@ -1,14 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth";
 
 export default function AuthPage() {
-  const handleSignIn = async () => {
-    await authClient.signIn.social({
-      provider: "google",
-    });
+  const router = useRouter();
+
+  const handleSignIn = () => {
+    router.push("/onboarding");
   };
 
   return (
