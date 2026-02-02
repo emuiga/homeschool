@@ -31,6 +31,13 @@ export default function AuthPage() {
       return;
     }
 
+    // If already signed in, redirect to appropriate page
+    if (isSignedIn && user) {
+      const onboarded = user.publicMetadata?.onboarded as boolean;
+      router.push(onboarded ? "/dashboard" : "/onboarding");
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);

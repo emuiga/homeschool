@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -8,12 +9,34 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useClerk } from "@clerk/nextjs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useApiClient, getCurrentUser, type AuthUser } from "@/lib/auth-api";
 
 export default function DashboardPage() {
   const pathname = usePathname();
-  const userInitials = "JD";
+  const { fetchApi } = useApiClient();
+  const { signOut } = useClerk();
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    getCurrentUser(fetchApi)
+      .then(setUser)
+      .catch(console.error);
+  }, [fetchApi]);
+
+  const userInitials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "?";
 
   return (
     <div className="flex h-screen flex-col bg-background font-sans">
@@ -23,15 +46,33 @@ export default function DashboardPage() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                  {userInitials}
-                </span>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.picture ?? undefined} alt={user?.name ?? "User"} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
+              {user && (
+                <>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem>My profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => signOut({ redirectUrl: "/auth" })}>
+                Sign out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -64,10 +105,10 @@ export default function DashboardPage() {
             <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
               <div className="text-center">
                 <h1 className="mb-4 text-4xl font-semibold">
-                  You're all set 🎉
+                  Welcome{user?.name ? `, ${user.name.split(" ")[0]}` : ""}!
                 </h1>
-                <p className="mb-8 text-lg text-muted-foreground">
-                  Welcome to your dashboard
+                <p className="text-lg text-muted-foreground">
+                  Your dashboard is ready
                 </p>
               </div>
             </div>
