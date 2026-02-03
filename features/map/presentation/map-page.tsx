@@ -1,97 +1,141 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
+import { useApiClient, getCurrentUser, type AuthUser } from "@/lib/auth-api";
+import { Header } from "@/components/layout/header";
+import { Sidebar } from "@/components/layout/sidebar";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { tutorsNearYou } from "@/features/marketplace/data/tutors";
 
 export default function MapPage() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const pathname = usePathname();
-  const userInitials = "JD";
+  const searchParams = useSearchParams();
+  const view = searchParams.get("view");
+  const showTutors = view === "tutors";
+  
+  const { fetchApi } = useApiClient();
+  const { signOut } = useClerk();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationSet, setLocationSet] = useState(false);
 
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    getCurrentUser(fetchApi)
+      .then(setUser)
+      .catch(console.error);
+  }, [fetchApi]);
+
+  // Get user location
+  useEffect(() => {
+    if (showTutors && navigator.geolocation && !locationSet) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
+          setLocationSet(true);
+        },
+        () => {
+          // Default to Nairobi, Kenya if geolocation fails
+          setUserLocation({ lat: -1.2921, lng: 36.8219 });
+          setLocationSet(true);
+        }
+      );
+    } else if (!showTutors && !locationSet) {
+      // Default to Nairobi, Kenya
+      setUserLocation({ lat: -1.2921, lng: 36.8219 });
+      setLocationSet(true);
+    }
+  }, [showTutors, locationSet]);
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || map.current || !locationSet) return;
 
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+
+    const center = userLocation 
+      ? [userLocation.lng, userLocation.lat] 
+      : [36.8219, -1.2921];
+    const zoom = showTutors ? 13 : 12;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: [-74.006, 40.7128],
-      zoom: 12,
+      center: center as [number, number],
+      zoom: zoom,
     });
 
     map.current.on("load", () => {
       setMapLoaded(true);
+      
+      // Add user location marker if showing tutors
+      if (showTutors && userLocation) {
+        new mapboxgl.Marker({ color: "#22c55e" })
+          .setLngLat([userLocation.lng, userLocation.lat])
+          .setPopup(new mapboxgl.Popup().setHTML("<div class='p-2'><strong>Your Location</strong></div>"))
+          .addTo(map.current!);
+      }
+      
+      // Add tutor markers if showing tutors
+      if (showTutors && userLocation) {
+        tutorsNearYou.forEach((tutor) => {
+          // Generate random nearby coordinates for demo
+          const lat = userLocation.lat + (Math.random() - 0.5) * 0.1;
+          const lng = userLocation.lng + (Math.random() - 0.5) * 0.1;
+          
+          const el = document.createElement("div");
+          el.className = "tutor-marker";
+          el.style.width = "32px";
+          el.style.height = "32px";
+          el.style.borderRadius = "50%";
+          el.style.backgroundColor = "#3b82f6";
+          el.style.border = "3px solid white";
+          el.style.cursor = "pointer";
+          
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([lng, lat])
+            .setPopup(
+              new mapboxgl.Popup().setHTML(
+                `<div class='p-3'><strong>${tutor.name}</strong><br/>${tutor.location}<br/>${tutor.curricula.join(", ")}</div>`
+              )
+            )
+            .addTo(map.current!);
+          
+          markersRef.current.push(marker);
+        });
+      }
     });
 
     return () => {
+      markersRef.current.forEach((marker) => marker.remove());
       map.current?.remove();
+      map.current = null;
     };
-  }, []);
+  }, [showTutors, userLocation, locationSet]);
+
+  const handleSignOut = () => {
+    signOut({ redirectUrl: "/auth" });
+  };
 
   return (
     <div className="flex h-screen flex-col bg-background font-sans">
-      <header className="border-b border-border bg-background px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="text-lg font-semibold">Homeschool</div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                  {userInitials}
-                </span>
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>My profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
+      <Header user={user} onSignOut={handleSignOut} />
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-48 border-r border-border bg-background">
-          <div className="flex h-full flex-col p-4">
-            <nav className="flex flex-1 flex-col gap-2">
-              <Link href="/dashboard">
-                <Button
-                  variant={pathname === "/dashboard" ? "default" : "ghost"}
-                  className="w-full justify-start"
-                >
-                  Dashboard
-                </Button>
-              </Link>
-              <Link href="/map">
-                <Button
-                  variant={pathname === "/map" ? "default" : "ghost"}
-                  className="w-full justify-start"
-                >
-                  Map
-                </Button>
-              </Link>
-            </nav>
-          </div>
-        </aside>
+        <Sidebar />
         <main className="flex-1 flex flex-col overflow-hidden">
           <div className="border-b border-border bg-background px-6 py-4">
             <div>
               <h1 className="text-2xl font-semibold">Map</h1>
               <p className="text-sm text-muted-foreground">
-                Explore homeschooling resources in your area
+                {showTutors 
+                  ? "Find tutors near your location" 
+                  : "Explore homeschooling resources in your area"}
               </p>
             </div>
           </div>

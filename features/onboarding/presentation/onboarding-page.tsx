@@ -5,29 +5,15 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-type OnboardingStep = "welcome" | "profile" | "role" | "success";
-
-const welcomeSlides = [
-  {
-    title: "Homeschooling can feel isolating",
-    description: "Finding resources, connecting with other families, and tracking progress shouldn't be a solo journey.",
-  },
-  {
-    title: "We bring homeschooling communities together",
-    description: "Discover local resources, connect with tutors and families, and build a supportive network that makes homeschooling work better.",
-  },
-  {
-    title: "Turn your homeschool into a thriving community",
-    description: "Join families who are making homeschooling work better together. Find what you need, when you need it.",
-  },
-];
+import { OnboardingStep, UserRole, OnboardingFormData } from "../domain/types";
+import { welcomeSlides } from "../data/welcome-slides";
+import { saveOnboardingData } from "../repo/onboarding-repo";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<OnboardingStep>("welcome");
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<OnboardingFormData>({
     name: "",
     username: "",
   });
@@ -48,8 +34,12 @@ export default function OnboardingPage() {
     setStep("role");
   };
 
-  const handleRoleSelect = (role: "parent" | "tutor") => {
-    console.log("Role selected:", role);
+  const handleRoleSelect = async (role: UserRole) => {
+    const finalData: OnboardingFormData = {
+      ...formData,
+      role,
+    };
+    await saveOnboardingData(finalData);
     setStep("success");
     setTimeout(() => {
       router.push("/dashboard");
