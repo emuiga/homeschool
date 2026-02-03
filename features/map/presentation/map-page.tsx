@@ -57,65 +57,102 @@ export default function MapPage() {
   useEffect(() => {
     if (!mapContainer.current || map.current || !locationSet) return;
 
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+    const accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    
+    if (!accessToken) {
+      console.error("Mapbox access token is missing. Please set NEXT_PUBLIC_MAPBOX_TOKEN in your .env.local file");
+      return;
+    }
 
-    const center = userLocation 
-      ? [userLocation.lng, userLocation.lat] 
-      : [36.8219, -1.2921];
-    const zoom = showTutors ? 13 : 12;
+    mapboxgl.accessToken = accessToken;
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: center as [number, number],
-      zoom: zoom,
-    });
+    // Ensure container has dimensions
+    if (!mapContainer.current.offsetWidth || !mapContainer.current.offsetHeight) {
+      // Wait for next frame to ensure container is rendered
+      requestAnimationFrame(() => {
+        if (!mapContainer.current || map.current) return;
+        initializeMap();
+      });
+      return;
+    }
 
-    map.current.on("load", () => {
-      setMapLoaded(true);
-      
-      // Add user location marker if showing tutors
-      if (showTutors && userLocation) {
-        new mapboxgl.Marker({ color: "#22c55e" })
-          .setLngLat([userLocation.lng, userLocation.lat])
-          .setPopup(new mapboxgl.Popup().setHTML("<div class='p-2'><strong>Your Location</strong></div>"))
-          .addTo(map.current!);
-      }
-      
-      // Add tutor markers if showing tutors
-      if (showTutors && userLocation) {
-        tutorsNearYou.forEach((tutor) => {
-          // Generate random nearby coordinates for demo
-          const lat = userLocation.lat + (Math.random() - 0.5) * 0.1;
-          const lng = userLocation.lng + (Math.random() - 0.5) * 0.1;
-          
-          const el = document.createElement("div");
-          el.className = "tutor-marker";
-          el.style.width = "32px";
-          el.style.height = "32px";
-          el.style.borderRadius = "50%";
-          el.style.backgroundColor = "#3b82f6";
-          el.style.border = "3px solid white";
-          el.style.cursor = "pointer";
-          
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat([lng, lat])
-            .setPopup(
-              new mapboxgl.Popup().setHTML(
-                `<div class='p-3'><strong>${tutor.name}</strong><br/>${tutor.location}<br/>${tutor.curricula.join(", ")}</div>`
-              )
-            )
-            .addTo(map.current!);
-          
-          markersRef.current.push(marker);
+    initializeMap();
+
+    function initializeMap() {
+      if (!mapContainer.current || map.current) return;
+
+      const center = userLocation 
+        ? [userLocation.lng, userLocation.lat] 
+        : [36.8219, -1.2921];
+      const zoom = showTutors ? 13 : 12;
+
+      try {
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: "mapbox://styles/mapbox/streets-v12",
+          center: center as [number, number],
+          zoom: zoom,
+          antialias: true,
         });
+      } catch (error) {
+        console.error("Failed to initialize Mapbox map:", error);
+        setMapLoaded(false);
+        return;
       }
-    });
+
+      map.current.on("load", () => {
+        setMapLoaded(true);
+        
+        // Add user location marker if showing tutors
+        if (showTutors && userLocation) {
+          new mapboxgl.Marker({ color: "#22c55e" })
+            .setLngLat([userLocation.lng, userLocation.lat])
+            .setPopup(new mapboxgl.Popup().setHTML("<div class='p-2'><strong>Your Location</strong></div>"))
+            .addTo(map.current!);
+        }
+        
+        // Add tutor markers if showing tutors
+        if (showTutors && userLocation) {
+          tutorsNearYou.forEach((tutor) => {
+            // Generate random nearby coordinates for demo
+            const lat = userLocation.lat + (Math.random() - 0.5) * 0.1;
+            const lng = userLocation.lng + (Math.random() - 0.5) * 0.1;
+            
+            const el = document.createElement("div");
+            el.className = "tutor-marker";
+            el.style.width = "32px";
+            el.style.height = "32px";
+            el.style.borderRadius = "50%";
+            el.style.backgroundColor = "#3b82f6";
+            el.style.border = "3px solid white";
+            el.style.cursor = "pointer";
+            
+            const marker = new mapboxgl.Marker(el)
+              .setLngLat([lng, lat])
+              .setPopup(
+                new mapboxgl.Popup().setHTML(
+                  `<div class='p-3'><strong>${tutor.name}</strong><br/>${tutor.location}<br/>${tutor.curricula.join(", ")}</div>`
+                )
+              )
+              .addTo(map.current!);
+            
+            markersRef.current.push(marker);
+          });
+        }
+      });
+
+      map.current.on("error", (e) => {
+        console.error("Mapbox error:", e);
+        setMapLoaded(false);
+      });
+    }
 
     return () => {
       markersRef.current.forEach((marker) => marker.remove());
-      map.current?.remove();
-      map.current = null;
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, [showTutors, userLocation, locationSet]);
 
@@ -139,13 +176,18 @@ export default function MapPage() {
               </p>
             </div>
           </div>
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-h-0">
             <div ref={mapContainer} className="h-full w-full" />
             {!mapLoaded && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
                 <div className="text-center">
                   <div className="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                   <p className="text-sm text-muted-foreground">Loading map...</p>
+                  {!process.env.NEXT_PUBLIC_MAPBOX_TOKEN && (
+                    <p className="text-xs text-destructive mt-2">
+                      Mapbox token missing. Please set NEXT_PUBLIC_MAPBOX_TOKEN
+                    </p>
+                  )}
                 </div>
               </div>
             )}
