@@ -11,19 +11,35 @@ export function SavedTutors() {
         <CardTitle>Saved Tutors</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {[1, 2, 3].map((i) => (
+        {[
+          { name: "Mrs. Wanjiku", image: "/images/kidandtutor.jpg", rating: 4.8 },
+          { name: "Mr. Kipchoge", image: "/images/tutor.jpg", rating: 4.5 },
+          { name: "Ms. Adhiambo", image: "/images/teaching.jpg", rating: 4.9 },
+        ].map((tutor, i) => (
           <div key={i} className="flex items-center justify-between rounded-lg border p-3">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-muted" />
+              <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full">
+                <img
+                  src={tutor.image}
+                  alt={tutor.name}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
               <div>
-                <p className="text-sm font-medium">Tutor {i}</p>
+                <p className="text-sm font-medium">{tutor.name}</p>
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
-                      className="h-3 w-3 fill-yellow-400 text-yellow-400"
+                      className={`h-3 w-3 ${
+                        star <= Math.floor(tutor.rating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-muted-foreground"
+                      }`}
                     />
                   ))}
+                  <span className="ml-1 text-xs text-muted-foreground">({tutor.rating})</span>
                 </div>
               </div>
             </div>

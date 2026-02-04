@@ -11,9 +11,7 @@ import { ActivityFeed } from "../components/activity-feed";
 import { FeaturedTutors } from "../components/featured-tutors";
 import { SavedTutors } from "../components/saved-tutors";
 import { LocalMeetups } from "../components/local-meetups";
-import { LearningJourney } from "../components/learning-journey";
 import { EarningsBookings } from "../components/earnings-bookings";
-import { Calendar } from "@/components/calendar";
 
 export default function DashboardPage() {
   const { fetchApi } = useApiClient();
@@ -55,6 +53,42 @@ export default function DashboardPage() {
               <Welcome user={user} />
             </div>
 
+            {/* Hero Banner */}
+            <div className="relative mb-6 overflow-hidden rounded-xl border bg-gradient-to-r from-green-50 to-blue-50">
+              <div className="absolute inset-0">
+                <img
+                  src="/images/kids.jpg"
+                  alt="Homeschool community"
+                  className="h-full w-full object-cover opacity-20"
+                  loading="lazy"
+                />
+              </div>
+              <div className="relative p-8 md:p-12">
+                <div className="max-w-2xl">
+                  <h2 className="mb-3 text-2xl font-semibold md:text-3xl">
+                    Welcome to Your Homeschool Community
+                  </h2>
+                  <p className="mb-4 text-muted-foreground md:text-lg">
+                    Connect with local educators, discover resources, and join meetups in your area.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href="/tutors"
+                      className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
+                    >
+                      Find Tutors
+                    </a>
+                    <a
+                      href="/marketplace"
+                      className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                    >
+                      Browse Marketplace
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               {/* Left Column - Main Content */}
@@ -64,7 +98,6 @@ export default function DashboardPage() {
                 <FeaturedTutors variant="grid" />
 
                 {/* Show different content based on role */}
-                {isParent && <LearningJourney />}
                 {isTutor && <EarningsBookings />}
               </div>
 
@@ -73,7 +106,6 @@ export default function DashboardPage() {
                 <FeaturedTutors variant="list" />
                 {isParent && <SavedTutors />}
                 <LocalMeetups />
-                {isParent && <Calendar />}
               </div>
             </div>
           </div>

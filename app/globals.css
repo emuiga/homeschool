@@ -122,4 +122,18 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Performance optimizations */
+  img {
+    content-visibility: auto;
+  }
+  /* Smooth scrolling with better performance */
+  html {
+    scroll-behavior: smooth;
+  }
+  /* Optimize font rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
 }

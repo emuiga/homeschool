@@ -50,12 +50,13 @@ export function MarketplaceServicesSection({
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {services.map((service) => (
           <Card key={service.id} className="overflow-hidden flex flex-col">
-            <div className="relative h-48 w-full bg-muted">
+            <div className="relative h-48 w-full overflow-hidden bg-muted">
               {service.image ? (
                 <img
                   src={service.image}
                   alt={service.title}
                   className="h-full w-full object-cover"
+                  loading="lazy"
                 />
               ) : (
                 <div className="flex h-full items-center justify-center">

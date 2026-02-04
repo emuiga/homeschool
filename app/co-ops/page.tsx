@@ -8,8 +8,9 @@ import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import CoOpsPage from "@/features/co-ops/presentation/pages/coops-page";
 
-export default function GroupsRoute() {
+export default function CoOpsRoute() {
   const { fetchApi } = useApiClient();
   const { signOut } = useClerk();
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -31,21 +32,15 @@ export default function GroupsRoute() {
         <Sidebar />
         <div className="flex-1 overflow-y-auto bg-muted/30">
           <div className="mx-auto max-w-7xl p-6">
-            <div className="mb-8">
+            <div className="mb-6">
               <Link href="/dashboard">
                 <Button variant="ghost" size="sm" className="mb-4 gap-2">
                   <ArrowLeft className="h-4 w-4" />
                   Back to Dashboard
                 </Button>
               </Link>
-              <h1 className="text-4xl font-semibold mb-2">Co-ops</h1>
-              <p className="text-muted-foreground">
-                Connect with local homeschooling families and communities
-              </p>
             </div>
-            <div className="flex min-h-[400px] items-center justify-center rounded-lg border bg-background">
-              <p className="text-muted-foreground">Co-ops feature coming soon</p>
-            </div>
+            <CoOpsPage />
           </div>
         </div>
       </div>

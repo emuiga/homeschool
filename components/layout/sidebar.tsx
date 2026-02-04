@@ -37,10 +37,10 @@ export function Sidebar() {
           })}
         </nav>
         <div className="pt-4">
-          <Button className="w-full gap-2 bg-green-600 hover:bg-green-700">
-            <TrendingUp className="h-4 w-4" />
-            System up-to-date
-          </Button>
+          <div className="flex items-center gap-2 rounded-md border bg-background px-2 py-1.5 shadow-sm">
+            <div className="h-2 w-2 flex-shrink-0 rounded-full bg-green-500" />
+            <span className="text-xs font-medium text-foreground truncate">All systems operational</span>
+          </div>
         </div>
       </div>
     </aside>
