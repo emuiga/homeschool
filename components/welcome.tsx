@@ -19,3 +19,4 @@ export function Welcome({ user }: WelcomeProps) {
   );
 }
 
+

@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { TutorHeader } from "../components/tutor-header";
 import { TutorAbout } from "../components/tutor-about";
 import { TutorAvailability } from "../components/tutor-availability";
@@ -86,6 +89,14 @@ export default function TutorProfilePage({ tutorId }: { tutorId: string }) {
   return (
     <div className="flex-1 overflow-y-auto bg-muted/30">
       <div className="mx-auto max-w-5xl p-6">
+        <div className="mb-4">
+          <Link href="/tutors">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Tutors
+            </Button>
+          </Link>
+        </div>
         <TutorHeader
           tutor={tutor}
           onContact={handleContact}

@@ -15,6 +15,7 @@ export default function MapPage() {
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [webGLSupported, setWebGLSupported] = useState<boolean | null>(null);
   const searchParams = useSearchParams();
   const view = searchParams.get("view");
   const showTutors = view === "tutors";
@@ -53,9 +54,23 @@ export default function MapPage() {
     }
   }, [showTutors, locationSet]);
 
+  // Check WebGL/Mapbox GL support on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      setWebGLSupported(false);
+      return;
+    }
+    
+    // Use Mapbox GL's built-in support check
+    const isSupported = mapboxgl.supported({
+      failIfMajorPerformanceCaveat: false,
+    });
+    setWebGLSupported(isSupported);
+  }, []);
+
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current || !locationSet) return;
+    if (!mapContainer.current || map.current || !locationSet || webGLSupported !== true) return;
 
     const accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
     
@@ -93,6 +108,8 @@ export default function MapPage() {
           center: center as [number, number],
           zoom: zoom,
           antialias: true,
+          // Add failIfMajorPerformanceCaveat to provide better error messages
+          failIfMajorPerformanceCaveat: false,
         });
       } catch (error) {
         console.error("Failed to initialize Mapbox map:", error);
@@ -154,7 +171,7 @@ export default function MapPage() {
         map.current = null;
       }
     };
-  }, [showTutors, userLocation, locationSet]);
+  }, [showTutors, userLocation, locationSet, webGLSupported]);
 
   const handleSignOut = () => {
     signOut({ redirectUrl: "/auth" });
@@ -181,12 +198,26 @@ export default function MapPage() {
             {!mapLoaded && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
                 <div className="text-center">
-                  <div className="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                  <p className="text-sm text-muted-foreground">Loading map...</p>
-                  {!process.env.NEXT_PUBLIC_MAPBOX_TOKEN && (
-                    <p className="text-xs text-destructive mt-2">
-                      Mapbox token missing. Please set NEXT_PUBLIC_MAPBOX_TOKEN
-                    </p>
+                  {webGLSupported === false ? (
+                    <>
+                      <p className="text-sm text-destructive font-semibold mb-2">
+                        WebGL is not supported
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Your browser does not support WebGL, which is required to display the map.
+                        Please try using a different browser or enable WebGL in your browser settings.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                      <p className="text-sm text-muted-foreground">Loading map...</p>
+                      {!process.env.NEXT_PUBLIC_MAPBOX_TOKEN && (
+                        <p className="text-xs text-destructive mt-2">
+                          Mapbox token missing. Please set NEXT_PUBLIC_MAPBOX_TOKEN
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

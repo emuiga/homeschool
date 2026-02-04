@@ -30,7 +30,7 @@ export function FeaturedTutors({ variant = "grid" }: FeaturedTutorsProps) {
                   ))}
                 </div>
               </div>
-              <Button size="sm" variant="outline">
+              <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
                 Save
               </Button>
             </div>

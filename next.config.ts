@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Turbopack is the default bundler in Next.js 16
+  // It handles Mapbox GL worker files automatically
+  turbopack: {},
 };
 
 export default nextConfig;

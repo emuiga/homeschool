@@ -27,7 +27,7 @@ export function SavedTutors() {
                 </div>
               </div>
             </div>
-            <Button size="sm">Message</Button>
+            <Button size="sm" className="bg-green-600 hover:bg-green-700">Message</Button>
           </div>
         ))}
       </CardContent>

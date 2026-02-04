@@ -18,7 +18,7 @@ export function LocalMeetups() {
             <p className="text-sm text-muted-foreground">Map preview</p>
           </div>
         </div>
-        <Button variant="outline" className="w-full" size="sm">
+        <Button className="w-full bg-green-600 hover:bg-green-700" size="sm">
           View All Meetups
         </Button>
       </CardContent>

@@ -40,10 +40,10 @@ export function TutorsNearYouSection({ tutors }: TutorsNearYouSectionProps) {
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {tutors.map((tutor) => (
-          <Card key={tutor.id}>
-            <CardContent className="p-4">
-              <div className="flex gap-4 mb-3">
-                <div className="h-20 w-20 flex-shrink-0 rounded-full bg-muted flex items-center justify-center text-xl font-semibold">
+          <Card key={tutor.id} className="py-0 gap-0">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 flex-shrink-0 rounded-full bg-muted flex items-center justify-center text-sm font-semibold">
                   {tutor.image ? (
                     <img
                       src={tutor.image}
@@ -55,49 +55,44 @@ export function TutorsNearYouSection({ tutors }: TutorsNearYouSectionProps) {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold mb-1 truncate">{tutor.name}</h3>
-                  <div className="flex items-center gap-1 mb-2">
+                  <h3 className="font-semibold text-sm mb-0.5 truncate">{tutor.name}</h3>
+                  <div className="flex items-center gap-0.5 mb-1">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-3.5 w-3.5 ${
+                        className={`h-2.5 w-2.5 ${
                           i < Math.floor(tutor.rating)
                             ? "fill-yellow-400 text-yellow-400"
                             : "text-muted-foreground"
                         }`}
                       />
                     ))}
-                    <span className="ml-1 text-xs font-medium">({tutor.rating})</span>
+                    <span className="ml-0.5 text-[10px] font-medium">({tutor.rating})</span>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-                    <MapPin className="h-3 w-3 flex-shrink-0" />
+                  <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground mb-1">
+                    <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
                     <span className="truncate">{tutor.location}</span>
                   </div>
+                  <div className="flex flex-wrap gap-1">
+                    {tutor.curricula.slice(0, 2).map((curriculum) => (
+                      <Badge key={curriculum} variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {curriculum}
+                      </Badge>
+                    ))}
+                    {tutor.curricula.length > 2 && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        +{tutor.curricula.length - 2}
+                      </Badge>
+                    )}
+                    {tutor.supportsIXL && (
+                      <Badge variant="outline" className="text-[10px] border-green-600 text-green-600 px-1.5 py-0">
+                        IXL Support
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="mb-3">
-                <p className="text-xs text-muted-foreground mb-1.5">Curricula:</p>
-                <div className="flex flex-wrap gap-1">
-                  {tutor.curricula.slice(0, 2).map((curriculum) => (
-                    <Badge key={curriculum} variant="secondary" className="text-xs">
-                      {curriculum}
-                    </Badge>
-                  ))}
-                  {tutor.curricula.length > 2 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{tutor.curricula.length - 2}
-                    </Badge>
-                  )}
-                </div>
-                {tutor.supportsIXL && (
-                  <Badge variant="outline" className="text-xs border-green-600 text-green-600 mt-1.5">
-                    IXL Support
-                  </Badge>
-                )}
-              </div>
-              <div className="flex justify-end">
-                <Link href={`/tutors/${tutor.id}`}>
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                <Link href={`/tutors/${tutor.id}`} className="flex-shrink-0">
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-xs px-3 py-1.5 h-auto whitespace-nowrap">
                     View Profile
                   </Button>
                 </Link>
